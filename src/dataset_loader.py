@@ -19,7 +19,9 @@ def load_dataset(dataset_path: str) -> typing.List[pandas.DataFrame]:
     data_frames: typing.List[pandas.DataFrame] = []
     for item in dataset_path.iterdir():
         if item.is_file() and item.suffix == '.csv':
-            data_frames.append(pandas.read_csv(filepath_or_buffer=item))
+            data_frame = pandas.read_csv(filepath_or_buffer=item)
+
+            data_frames.append(data_frame)
 
     return data_frames
 
