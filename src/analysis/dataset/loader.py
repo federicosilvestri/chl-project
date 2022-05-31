@@ -3,6 +3,7 @@ import pandas as pd
 import typing as tp
 from pathlib import Path
 import logging as lg
+import concurrent.futures
 
 
 def load_datasets(ds_path: str, disease_colname: str = 'DISEASE') -> tp.List[pd.DataFrame]:
@@ -32,13 +33,15 @@ def load_datasets(ds_path: str, disease_colname: str = 'DISEASE') -> tp.List[pd.
         disease_name = dir_item.name
         lg.info(f"Setting disease as {disease_name}")
 
-        for item in dir_item.iterdir():
-            # iterating the "disease directory"
-            if item.is_file() and item.suffix == '.csv':
-                # reading the file with pandas
-                data_frame = pd.read_csv(filepath_or_buffer=item)
-                # adding disease column
-                data_frame[disease_colname] = disease_name
-                datasets.append(data_frame)
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            futures = []
+            for item in dir_item.iterdir():
+                # iterating the "disease directory"
+                if item.is_file() and item.suffix == '.csv':
+                    # reading the file with pandas
+                    executor.submit(pd.read_csv, kwargs={'filepath_or_buffer': item})
+                    # adding disease column
+                    data_frame[disease_colname] = disease_name
+                    datasets.append(data_frame)
 
     return datasets
