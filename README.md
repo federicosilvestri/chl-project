@@ -12,6 +12,6 @@ Use classification and feature selection to extract biomarkers and classify pati
 
 | Name     | Surname   | Email (at studenti.unipi.it) |
 |----------|-----------|------------------------------|
-| Edoardo  | Federici  | e.federici 1                 |
+| Edoardo  | Federici  | e.federici1                  |
 | Simone   | Baccile   | s.baccile                    |
 | Federico | Silvestri | f.silvestri10                |
