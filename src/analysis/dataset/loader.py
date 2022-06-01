@@ -3,6 +3,7 @@ import pandas as pd
 import typing as tp
 from pathlib import Path
 import logging as lg
+import concurrent.futures
 
 
 def load_datasets(ds_path: str, disease_colname: str = 'DISEASE') -> tp.List[pd.DataFrame]:
@@ -23,22 +24,37 @@ def load_datasets(ds_path: str, disease_colname: str = 'DISEASE') -> tp.List[pd.
 
     # declaring the datasets list, represented by a DataFrame
     datasets: tp.List[pd.DataFrame] = []
-    for dir_item in dataset_path.iterdir():
-        if not dir_item.is_dir():
-            # It's not a directory
-            lg.info(f"Skipping file {dir_item}")
-            continue
-        lg.info(f"Inspecting directory {dir_item}")
-        disease_name = dir_item.name
-        lg.info(f"Setting disease as {disease_name}")
-
-        for item in dir_item.iterdir():
-            # iterating the "disease directory"
-            if item.is_file() and item.suffix == '.csv':
-                # reading the file with pandas
-                data_frame = pd.read_csv(filepath_or_buffer=item)
-                # adding disease column
-                data_frame[disease_colname] = disease_name
-                datasets.append(data_frame)
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        futures = []
+        for dir_item in dataset_path.iterdir():
+            if not dir_item.is_dir():
+                # It's not a directory
+                lg.info(f"Skipping file {dir_item}")
+                continue
+            lg.info(f"Inspecting directory {dir_item}")
+            disease_name = dir_item.name
+            lg.info(f"Setting disease as {disease_name}")
+            for item in dir_item.iterdir():
+                # iterating the "disease directory"
+                if item.is_file() and item.suffix == '.csv':
+                    # schedule loading
+                    future = executor.submit(
+                        _execute_load,
+                        file_path=item,
+                        disease_colname=disease_colname,
+                        disease_name=disease_name
+                    )
+                    futures.append(future)
+        for future in futures:
+            # waiting all threads
+            datasets.append(future.result())
 
     return datasets
+
+
+def _execute_load(file_path: Path, disease_colname: str, disease_name) -> pd.DataFrame:
+    lg.info(f"Loading file {file_path}")
+    data_frame = pd.read_csv(filepath_or_buffer=file_path)
+    data_frame[disease_colname] = disease_name
+
+    return data_frame

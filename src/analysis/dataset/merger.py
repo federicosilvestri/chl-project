@@ -43,5 +43,5 @@ def build_dataset(datasets: tp.List[pd.DataFrame]) -> pd.DataFrame:
     :param datasets: the datasets to concatenate.
     :return: a unique dataset, represented by a DataFrame
     """
-    unique_ds = pd.concat(datasets)
+    unique_ds = pd.concat(datasets, ignore_index=True)
     return unique_ds

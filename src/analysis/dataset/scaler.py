@@ -2,6 +2,7 @@ import typing as tp
 import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
 
+
 def scale_minmax(datasets: tp.List[pd.DataFrame], disease_colname: str = "DISEASE"):
     """Scale dataset using minmax.
     :param datasets the dataset to be scaled
