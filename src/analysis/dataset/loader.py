@@ -49,6 +49,7 @@ def load_datasets(ds_path: str, disease_colname: str = 'DISEASE') -> tp.List[pd.
             # waiting all threads
             datasets.append(future.result())
 
+    lg.info("Datasets loading completed")
     return datasets
 
 
@@ -56,5 +57,5 @@ def _execute_load(file_path: Path, disease_colname: str, disease_name) -> pd.Dat
     lg.info(f"Loading file {file_path}")
     data_frame = pd.read_csv(filepath_or_buffer=file_path)
     data_frame[disease_colname] = disease_name
-
+    lg.info("Load completed")
     return data_frame
