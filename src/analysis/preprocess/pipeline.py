@@ -1,5 +1,4 @@
 import logging as lg
-from pathlib import Path
 
 import pandas as pd
 import typing as tp
@@ -33,12 +32,6 @@ class PreprocessPipeline:
         lg.info("Pipeline executed")
         # cleaning memory
         del self._datasets_
-
-    def save_dataset_to_csv(self, file_path: str):
-        if not self._dataset_:
-            raise RuntimeError("Pipeline is not executed yet")
-
-        self._dataset_.to_csv(Path(file_path))
 
     @property
     def dataset(self):
