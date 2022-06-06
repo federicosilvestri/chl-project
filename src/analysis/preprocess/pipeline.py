@@ -11,7 +11,7 @@ from analysis.dataset import load_datasets, compute_ds_col_intersection, clean_d
 class PreprocessPipeline:
     """Pipeline for preprocessing"""
 
-    def __init__(self, datasets_path: str, disease_col_name: str = 'DISEASE', output_dir: str = '/tmp/chl/'):
+    def __init__(self, datasets_path: str, disease_col_name: str = 'DISEASE', output_dir: str = '/tmp/chl'):
         self._dataset_path_: str = datasets_path
         self._disease_col_name: str = disease_col_name
         self._dataset_: tp.Optional[pd.DataFrame] = None
@@ -20,9 +20,9 @@ class PreprocessPipeline:
         self.split_ds_test: float = .25
         self.output_dir = output_dir
 
-    def execute_pipeline(self):
-        if self._load_ds_():
-            lg.info(f"Pipeline already executed, found dataset inside {self.output_dir}/dataset.csv")
+    def execute_pipeline(self, force_recompute: bool = False):
+        if self._load_ds_() and not force_recompute:
+            lg.info(f"Pipeline already executed, found dataset inside {self.output_dir}")
             return
 
         lg.info("Starting pipeline")
@@ -44,19 +44,36 @@ class PreprocessPipeline:
         )
         lg.info("Pipeline executed")
 
+        lg.info("Storing ds")
+        self._store_ds_()
+        lg.info(f"Dataset saved into {self.output_dir}")
+
     def _store_ds_(self):
-        output_dir: pathlib.Path = pathlib.Path(self._dataset_path_)
+        lg.info("Storing dataset")
+        output_dir: pathlib.Path = pathlib.Path(self.output_dir)
         if not output_dir.exists():
+            lg.info(f"Creating directory {output_dir}")
             output_dir.mkdir()
-        self.dataset.to_csv(output_dir / 'dataset.csv')
+
+        # saving the entire dataset
+        lg.info("Saving entire dataset")
+        self.dataset.to_csv(path_or_buf=pathlib.Path(output_dir / 'full.csv'))
+
+        # saving all pieces of datasets
+        for key, value in self._ds_.items():
+            lg.info(f"Saving dataset {key}")
+            self._ds_[key].to_csv(path_or_buf=pathlib.Path(output_dir / f"{key}.csv"))
 
     def _load_ds_(self) -> bool:
-        input_dir: pathlib.Path = pathlib.Path(self._dataset_path_) / 'dataset.csv'
-
-        if input_dir.exists():
-            self._dataset_ = pd.read_csv(input_dir)
-            return True
-
+        output_dir: pathlib.Path = pathlib.Path(self.output_dir)
+        if output_dir.exists():
+            try:
+                self._dataset_ = pd.read_csv(output_dir / 'full.csv')
+                self._ds_['test'] = pd.read_csv(output_dir / 'test.csv')
+                self._ds_['test'] = pd.read_csv(output_dir / 'train.csv')
+                return True
+            except FileNotFoundError:
+                return False
         return False
 
     @property
