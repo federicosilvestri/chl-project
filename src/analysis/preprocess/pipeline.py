@@ -1,4 +1,5 @@
 import logging as lg
+import pathlib
 
 import pandas as pd
 import typing as tp
@@ -10,15 +11,20 @@ from analysis.dataset import load_datasets, compute_ds_col_intersection, clean_d
 class PreprocessPipeline:
     """Pipeline for preprocessing"""
 
-    def __init__(self, datasets_path: str, disease_col_name: str = 'DISEASE'):
+    def __init__(self, datasets_path: str, disease_col_name: str = 'DISEASE', output_dir: str = '/tmp/chl/'):
         self._dataset_path_: str = datasets_path
         self._disease_col_name: str = disease_col_name
         self._dataset_: tp.Optional[pd.DataFrame] = None
         self._ds_: tp.Dict[str, pd.DataFrame] = {}
         self.split_ds_train: float = .75
         self.split_ds_test: float = .25
+        self.output_dir = output_dir
 
     def execute_pipeline(self):
+        if self._load_ds_():
+            lg.info(f"Pipeline already executed, found dataset inside {self.output_dir}/dataset.csv")
+            return
+
         lg.info("Starting pipeline")
         lg.info("Loading datasets")
         datasets = load_datasets(self._dataset_path_, disease_colname=self._disease_col_name)
@@ -37,6 +43,21 @@ class PreprocessPipeline:
             train=self.split_ds_train, test=self.split_ds_test, dataset=self.dataset
         )
         lg.info("Pipeline executed")
+
+    def _store_ds_(self):
+        output_dir: pathlib.Path = pathlib.Path(self._dataset_path_)
+        if not output_dir.exists():
+            output_dir.mkdir()
+        self.dataset.to_csv(output_dir / 'dataset.csv')
+
+    def _load_ds_(self) -> bool:
+        input_dir: pathlib.Path = pathlib.Path(self._dataset_path_) / 'dataset.csv'
+
+        if input_dir.exists():
+            self._dataset_ = pd.read_csv(input_dir)
+            return True
+
+        return False
 
     @property
     def dataset(self):
