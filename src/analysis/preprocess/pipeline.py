@@ -40,7 +40,7 @@ class PreprocessPipeline:
         self._dataset_ = build_dataset(datasets)
         lg.info("Splitting dataset into test and train")
         self._ds_ = split_train_test(
-            train=self.split_ds_train, test=self.split_ds_test, dataset=self.dataset
+            test=self.split_ds_test, dataset=self.dataset
         )
         lg.info("Pipeline executed")
 
