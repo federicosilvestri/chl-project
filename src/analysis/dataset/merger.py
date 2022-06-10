@@ -1,7 +1,7 @@
 """This file contains all the merging functions."""
 import typing as tp
 import pandas as pd
-from .standardizer import standardize_colname
+from .standardizer import standardize_colname, standardize_patients_name
 
 
 def compute_ds_col_intersection(datasets: tp.List[pd.DataFrame]) -> tp.List[str]:
@@ -43,5 +43,9 @@ def build_dataset(datasets: tp.List[pd.DataFrame]) -> pd.DataFrame:
     :param datasets: the datasets to concatenate.
     :return: a unique dataset, represented by a DataFrame
     """
-    unique_ds = pd.concat(datasets)
+    unique_ds = pd.concat(datasets, ignore_index=True)
+
+    # create unique patient name
+    standardize_patients_name(unique_ds)
+
     return unique_ds
