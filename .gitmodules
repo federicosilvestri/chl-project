@@ -1,0 +1,3 @@
+[submodule "src/notebooks/RAC"]
+	path = src/notebooks/RAC
+	url = https://github.com/alsri/RAC
