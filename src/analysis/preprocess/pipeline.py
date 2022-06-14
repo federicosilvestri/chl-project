@@ -70,7 +70,7 @@ class PreprocessPipeline:
             try:
                 self._dataset_ = pd.read_csv(output_dir / 'full.csv')
                 self._ds_['test'] = pd.read_csv(output_dir / 'test.csv')
-                self._ds_['test'] = pd.read_csv(output_dir / 'train.csv')
+                self._ds_['train'] = pd.read_csv(output_dir / 'train.csv')
                 return True
             except FileNotFoundError:
                 return False
