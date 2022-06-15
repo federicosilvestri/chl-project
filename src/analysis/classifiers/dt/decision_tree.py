@@ -1,8 +1,10 @@
+import typing as tp
 import pandas as pd
 from sklearn.metrics import classification_report
 from sklearn.model_selection import StratifiedKFold, GridSearchCV
 from sklearn.tree import DecisionTreeClassifier
 import logging as lg
+import numpy as np
 
 
 def _grid_search_report(results) -> pd.DataFrame:
@@ -16,9 +18,9 @@ def _grid_search_report(results) -> pd.DataFrame:
     return results_df
 
 
-def make_model(train_x: pd.DataFrame, train_y: pd.DataFrame) -> DecisionTreeClassifier:
+def build_parameters(train_x: pd.DataFrame, train_y: pd.DataFrame) -> tp.Dict:
     """
-    Make the model using Decision Tree.
+    Build the best parameters for Decision Tree.
     :param train_x: the train X
     :param train_y: the train Y
     :return: Decision Tree classifier instance
@@ -29,13 +31,10 @@ def make_model(train_x: pd.DataFrame, train_y: pd.DataFrame) -> DecisionTreeClas
         {
             "criterion": ["gini", "entropy", "log_loss"],
             "splitter": ["best", "random"],
-            # "max_depth": list(np.arange(1, 100, 1)) + [None],
-            # "min_samples_split": list(np.arange(2, 10, 1)),
-            # "min_samples_leaf": list(np.arange(0, 5, 1)),
-            # "min_weight_fraction_leaf": list(np.arange(0.1, 1, .1)),
+            "min_samples_split": list(np.arange(2, 10, 1)),
+            "min_samples_leaf": list(np.arange(0, 5, 1)),
             "max_features": ["sqrt", "log2"],
             # "ccp_alpha": list(np.arange(0.1, 1, .1))
-            # add another...
         }
     ]
 
@@ -59,9 +58,11 @@ def make_model(train_x: pd.DataFrame, train_y: pd.DataFrame) -> DecisionTreeClas
 
     # Fetching best parameters found
     best_params = report.iloc[0]['params']
-    lg.info("Best parameters found for DecisionTree:")
-    lg.info(best_params)
 
+    return best_params
+
+
+def build_model(train_x: pd.DataFrame, train_y: pd.DataFrame, best_params: tp.Dict) -> DecisionTreeClassifier:
     # Building the model
     decision_tree: DecisionTreeClassifier = DecisionTreeClassifier(**best_params)
     # fitting the data

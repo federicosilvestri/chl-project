@@ -1,6 +1,7 @@
-from .decision_tree import make_model, evaluate_model
+from .decision_tree import build_parameters, build_model, evaluate_model
 
 __all__ = [
-    "make_model",
-    "evaluate_model"
+    "build_parameters",
+    "build_model",
+    "evaluate_model",
 ]
