@@ -16,16 +16,13 @@ def _grid_search_report(results) -> pd.DataFrame:
     return results_df
 
 
-def make_model(train_dataset: pd.DataFrame, disease_colname: str = "DISEASE") -> DecisionTreeClassifier:
+def make_model(train_x: pd.DataFrame, train_y: pd.DataFrame) -> DecisionTreeClassifier:
     """
     Make the model using Decision Tree.
-    :param train_dataset: the train dataset
-    :param disease_colname: Disease colname
-    :return:
+    :param train_x: the train X
+    :param train_y: the train Y
+    :return: Decision Tree classifier instance
     """
-    x_cols = [col_name for col_name in train_dataset.columns if col_name != disease_colname]
-    train_x = train_dataset[x_cols]
-    train_y = train_dataset[disease_colname]
 
     scoring = ['accuracy']
     params = [
@@ -73,17 +70,14 @@ def make_model(train_dataset: pd.DataFrame, disease_colname: str = "DISEASE") ->
     return decision_tree
 
 
-def evaluate_model(decision_tree: DecisionTreeClassifier, test_dataset: pd.DataFrame, disease_colname: str = "DISEASE"):
+def evaluate_model(decision_tree: DecisionTreeClassifier, test_x: pd.DataFrame, test_y: pd.DataFrame):
     """
     Evaluate the model.
     :param decision_tree:
-    :param test_dataset:
-    :param disease_colname: the disease colname
+    :param test_x: the test X
+    :param test_y: the test y
     :return:
     """
-    x_cols = [col_name for col_name in test_dataset.columns if col_name != disease_colname]
-    test_x = test_dataset[x_cols]
-    test_y = test_dataset[disease_colname]
     pred_y = decision_tree.predict(test_x)
 
     return classification_report(

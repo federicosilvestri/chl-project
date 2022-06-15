@@ -23,6 +23,8 @@ class PreprocessPipeline:
     def execute_pipeline(self, force_recompute: bool = False):
         if self._load_ds_() and not force_recompute:
             lg.info(f"Pipeline already executed, found dataset inside {self.output_dir}")
+            self._split_ds_()
+            lg.info("Pipeline executed")
             return
 
         lg.info("Starting pipeline")
@@ -39,14 +41,19 @@ class PreprocessPipeline:
         lg.info("Building unique dataset")
         self._dataset_ = build_dataset(datasets)
         lg.info("Splitting dataset into test and train")
-        self._ds_ = split_train_test(
-            test=self.split_ds_test, dataset=self.dataset
-        )
-        lg.info("Pipeline executed")
-
-        lg.info("Storing ds")
         self._store_ds_()
         lg.info(f"Dataset saved into {self.output_dir}")
+        self._split_ds_()
+        lg.info("Pipeline executed")
+
+    def _split_ds_(self):
+        lg.info("Splitting dataset")
+        # split the ds
+        self._ds_ = split_train_test(
+            test=self.split_ds_test,
+            dataset=self.dataset,
+            disease_colname=self._disease_col_name
+        )
 
     def _store_ds_(self):
         lg.info("Storing dataset")
@@ -57,20 +64,17 @@ class PreprocessPipeline:
 
         # saving the entire dataset
         lg.info("Saving entire dataset")
-        self.dataset.to_csv(path_or_buf=pathlib.Path(output_dir / 'full.csv'))
-
-        # saving all pieces of datasets
-        for key, value in self._ds_.items():
-            lg.info(f"Saving dataset {key}")
-            self._ds_[key].to_csv(path_or_buf=pathlib.Path(output_dir / f"{key}.csv"))
+        self._dataset_.to_csv(
+            path_or_buf=pathlib.Path(output_dir / 'full.csv'),
+            header=True,
+            index=False
+        )
 
     def _load_ds_(self) -> bool:
         output_dir: pathlib.Path = pathlib.Path(self.output_dir)
         if output_dir.exists():
             try:
                 self._dataset_ = pd.read_csv(output_dir / 'full.csv')
-                self._ds_['test'] = pd.read_csv(output_dir / 'test.csv')
-                self._ds_['train'] = pd.read_csv(output_dir / 'train.csv')
                 return True
             except FileNotFoundError:
                 return False
@@ -82,8 +86,24 @@ class PreprocessPipeline:
 
     @property
     def test_set(self):
-        return self._ds_['test']
+        return self._ds_['x_test'], self._ds_['y_test']
 
     @property
     def train_set(self):
-        return self._ds_['train']
+        return self._ds_['x_train'], self._ds_['y_train']
+
+    @property
+    def train_x(self):
+        return self._ds_['x_train']
+    
+    @property
+    def train_y(self):
+        return self._ds_['y_train']
+    
+    @property
+    def test_x(self):
+        return self._ds_['x_test']
+    
+    @property
+    def test_y(self):
+        return self._ds_['y_test']
