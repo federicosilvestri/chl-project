@@ -6,16 +6,7 @@ from sklearn.tree import DecisionTreeClassifier
 import logging as lg
 import numpy as np
 
-
-def _grid_search_report(results) -> pd.DataFrame:
-    results_df = pd.DataFrame(results)
-    rank = ['rank_test_accuracy']
-    columns = ['rank_test_accuracy',
-               'mean_test_accuracy', 'mean_train_accuracy', 'std_test_accuracy', 'std_train_accuracy',
-               'mean_fit_time', 'params']
-    results_df = results_df.sort_values(by=rank)
-    results_df = results_df[columns]
-    return results_df
+from analysis.classifiers.utils import grid_search_report
 
 
 def build_parameters(train_x: pd.DataFrame, train_y: pd.DataFrame) -> tp.Dict:
@@ -52,7 +43,7 @@ def build_parameters(train_x: pd.DataFrame, train_y: pd.DataFrame) -> tp.Dict:
     grid_search.fit(train_x, train_y)
     lg.info("Grid search terminated")
 
-    report = _grid_search_report(grid_search.cv_results_)
+    report = grid_search_report(grid_search.cv_results_)
     lg.info("Report of GridSearch")
     lg.info(report)
 
